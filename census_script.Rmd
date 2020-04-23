@@ -27,11 +27,40 @@ Fill out [this form](https://censoc-download.demog.berkeley.edu/) to access the 
 
 * How many rows (individual men) do we have in the data? Big data!
 
+5,703,274
+
 * Consider the oldest man in the dataset. (All the observation are male.) What year was he born in?
 
 * Calculate the average age at death by birth year. What two years have the highest average? Why? Without looking can you guess which years have the lowest average?
 
 * Which four months have the highest number of deaths? Why? What does that suggest about the influence of global warming on mortality?
+
+
+```{r Scene 1, echo = FALSE, cache = TRUE}
+
+# Read in dataset
+
+raw <- read_csv("censoc_dmf_v1/censoc_dmf_v1.csv") %>% 
+  filter(bmonth != 0)
+
+# Find the oldest man in the dataset
+
+raw %>% 
+  arrange(byear) %>% 
+  head()
+
+# Calculate average age at death
+
+raw %>% 
+  group_by(byear) %>% 
+  summarize(avg_age_death = mean(death_age)) 
+        
+raw %>% 
+  group_by(dmonth) %>% 
+  summarize(total = n()) %>% 
+  top_n(4, total)
+
+```
 
 
 ## Scene 2
@@ -44,8 +73,20 @@ Create a plot like the [one on Piazza](https://piazza.com/class/k5y1jx0s5ibe1?ci
 
 Don't try to get this working on the whole data set at once. That takes forever. Create a small data set called `small` with about 10,000 rows randomly sampled from `x` first. Use `small` for everything. Then, when the plot looks good, use `x`. 
 
+```{r Scene 2, echo = FALSE, cache = TRUE}
 
+x <- raw %>% 
+  mutate(death_date = ymd(paste0(dyear,"-", dmonth, "-", 1))) %>% 
+  select(death_date, death_age) 
 
+small <- x %>% 
+  sample_n(size = 10000)
+
+sc2_p <- x %>% 
+  ggplot(aes(x = death_age)) +
+  geom_histogram(binwidth = 1)
+
+```
 
 ## Scene 3
 
@@ -56,6 +97,30 @@ Hint: Always work with small data first! Get that working and then use big data.
 Hint: If you `group_by()` first, things go faster since you don't want to manipulate 5 million rows unless you have to. 
 
 Although you can go back and grab `dmonth`, you don't need to! You can work just with `x` and figure out the month by using the `month()` function.
+
+```{r Scene 3, echo = FALSE}
+
+x <- raw %>% 
+  mutate(death_date = ymd(paste0(dyear,"-", dmonth, "-", 1))) %>% 
+  select(death_date, death_age, dyear)
+
+smalL_s3 <- x %>% 
+  sample_n(size = 10000) 
+
+s3_p <- x %>% 
+  ggplot(aes(x = death_age)) +
+  geom_histogram(binwidth = 1)
+
+s3_p + 
+  transition_time(dyear) +
+  labs(title = "Year: {frame_time}")
+
+
+
+
+
+```
+
 
 
 
